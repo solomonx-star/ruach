@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import Image from "next/image";
-import DOMPurify from "isomorphic-dompurify";
+import SafeHtml from "@/components/ui/SafeHtml";
 import { connectDB } from "@/lib/mongodb";
 import { Post } from "@/models/Post";
 
@@ -61,9 +61,9 @@ export default async function BlogPostPage({ params }: { params: Promise<{ slug:
           <Image src={post.imageUrl} alt={post.title} fill priority sizes="(max-width: 860px) 100vw, 860px" className="object-cover" />
         </div>
       )}
-      <div
+      <SafeHtml
+        html={post.content}
         className="prose max-w-none text-[#4A5561] leading-[1.8] text-[17px]"
-        dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(post.content) }}
       />
     </div>
   );

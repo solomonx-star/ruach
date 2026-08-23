@@ -38,8 +38,8 @@ export async function GET() {
   const session = await auth();
   if (!session) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   await connectDB();
-  const volunteers = await Volunteer.find().sort({ createdAt: -1 }).limit(100);
-  return NextResponse.json(volunteers);
+  const raw = await Volunteer.find().sort({ createdAt: -1 }).limit(100).lean();
+  return NextResponse.json(JSON.parse(JSON.stringify(raw)));
 }
 
 export async function PATCH(req: NextRequest) {
