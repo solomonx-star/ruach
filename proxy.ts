@@ -3,6 +3,6 @@ import { authConfig } from "./auth.config";
 
 const { auth } = NextAuth(authConfig);
 
-export default auth;
+export const proxy = auth;
 
 export const config = { matcher: ["/admin/:path*"] };
