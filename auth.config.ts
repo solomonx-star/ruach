@@ -1,16 +1,15 @@
 import type { NextAuthConfig } from "next-auth";
-import type { NextRequest } from "next/server";
 
 const ADMIN_ROLES = ["admin", "editor", "volunteer-coordinator", "content-manager"];
 
 export const authConfig: NextAuthConfig = {
   providers: [],
   callbacks: {
-    authorized({ auth, request }: { auth: { user?: { role?: string } } | null; request: NextRequest }) {
+    authorized({ auth, request }) {
       const { pathname } = request.nextUrl;
       const isAdminRoute = pathname.startsWith("/admin") && pathname !== "/admin/login";
       if (isAdminRoute) {
-        const role = auth?.user?.role;
+        const role = (auth?.user as { role?: string } | undefined)?.role;
         return !!auth && !!role && ADMIN_ROLES.includes(role);
       }
       return true;
