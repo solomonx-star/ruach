@@ -10,7 +10,9 @@ export const authConfig: NextAuthConfig = {
       const isAdminRoute = pathname.startsWith("/admin") && pathname !== "/admin/login";
       if (isAdminRoute) {
         const role = (auth?.user as { role?: string } | undefined)?.role;
-        return !!auth && !!role && ADMIN_ROLES.includes(role);
+        if (!auth || !role || !ADMIN_ROLES.includes(role)) {
+          return Response.redirect(new URL("/admin/login", request.url));
+        }
       }
       return true;
     },
