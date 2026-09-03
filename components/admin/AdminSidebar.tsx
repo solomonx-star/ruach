@@ -5,7 +5,7 @@ import { usePathname } from "next/navigation";
 import { signOut } from "next-auth/react";
 import {
   LayoutDashboard, Calendar, Image, FileText, Heart,
-  MessageSquare, Users, HandHeart, Mail, UserCog, LogOut, BookOpen,
+  MessageSquare, Users, HandHeart, Mail, UserCog, LogOut, BookOpen, Settings,
 } from "lucide-react";
 
 const navItems = [
@@ -20,6 +20,7 @@ const navItems = [
   { label: "Prayer Requests", href: "/admin/prayers", icon: HandHeart },
   { label: "Newsletter", href: "/admin/newsletter", icon: Mail },
   { label: "Users", href: "/admin/users", icon: UserCog },
+  { label: "Site Settings", href: "/admin/settings", icon: Settings },
 ];
 
 export default function AdminSidebar() {

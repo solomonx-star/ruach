@@ -1,23 +1,63 @@
 "use client";
 
 import { useState } from "react";
+import Link from "next/link";
 
 const interestOptions = ["Ushering", "Worship team", "Media & sound", "Children", "Youth", "Outreach", "Missions", "Hospitality", "Transport"];
 const availabilityOptions = ["Weekdays", "Weekends", "Evenings", "Event days only"];
 
+const ways = [
+  {
+    title: "Volunteer",
+    desc: "Serve with our team in outreach, worship, media, children, youth, hospitality, and more. Fill out the registration form below.",
+    cta: "Register below",
+    href: "#volunteer-form",
+  },
+  {
+    title: "Partner with Ruach",
+    desc: "Stand with us as a ministry partner — praying, giving, or connecting your networks to support the work God has called us to.",
+    cta: "Get in touch",
+    href: "/contact",
+  },
+  {
+    title: "Support missions & outreach",
+    desc: "Help fund mission trips, community outreach, and evangelism efforts that bring the love of Christ to underserved communities.",
+    cta: "Give now",
+    href: "/donate",
+  },
+  {
+    title: "Pray with or for us",
+    desc: "Submit a prayer request or join our intercessory team. Prayer is the foundation of everything we do.",
+    cta: "Send a prayer request",
+    href: "/contact#prayer",
+  },
+  {
+    title: "Give financially",
+    desc: "Your generosity sends the gospel further. Give one-time or recurring to support the ministry and its global reach.",
+    cta: "Donate",
+    href: "/donate",
+  },
+  {
+    title: "Receive updates",
+    desc: "Stay connected with what God is doing through Ruach Global. Sign up for our newsletter to receive ministry news and prayer points.",
+    cta: "Subscribe",
+    href: "#newsletter",
+  },
+];
+
 export default function VolunteerClient() {
   const [interests, setInterests] = useState<string[]>([]);
   const [availability, setAvailability] = useState<string[]>([]);
-  const [anon, setAnon] = useState(false);
   const [vDone, setVDone] = useState(false);
-  const [pDone, setPDone] = useState(false);
   const [vLoading, setVLoading] = useState(false);
-  const [pLoading, setPLoading] = useState(false);
   const [vError, setVError] = useState<string | null>(null);
-  const [pError, setPError] = useState<string | null>(null);
-
   const [vForm, setVForm] = useState({ name: "", email: "", phone: "", city: "", address: "", skills: "" });
-  const [pForm, setPForm] = useState({ name: "", email: "", request: "" });
+
+  const [nName, setNName] = useState("");
+  const [nEmail, setNEmail] = useState("");
+  const [nLoading, setNLoading] = useState(false);
+  const [nDone, setNDone] = useState(false);
+  const [nError, setNError] = useState<string | null>(null);
 
   function toggleInterest(i: string) {
     setInterests((prev) => prev.includes(i) ? prev.filter((x) => x !== i) : [...prev, i]);
@@ -48,25 +88,26 @@ export default function VolunteerClient() {
     }
   }
 
-  async function submitPrayer(e: React.FormEvent) {
+  async function handleSubscribe(e: React.FormEvent) {
     e.preventDefault();
-    setPLoading(true);
-    setPError(null);
+    if (!nName || !nEmail) return;
+    setNLoading(true);
+    setNError(null);
     try {
-      const res = await fetch("/api/prayer", {
+      const res = await fetch("/api/newsletter", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ ...pForm, anonymous: anon }),
+        body: JSON.stringify({ name: nName, email: nEmail }),
       });
       if (!res.ok) {
-        setPError("Something went wrong. Please try again.");
+        setNError("Couldn't subscribe. Please try again.");
         return;
       }
-      setPDone(true);
+      setNDone(true);
     } catch {
-      setPError("Unable to send. Check your connection and try again.");
+      setNError("Couldn't subscribe. Please try again.");
     } finally {
-      setPLoading(false);
+      setNLoading(false);
     }
   }
 
@@ -79,17 +120,41 @@ export default function VolunteerClient() {
 
   return (
     <div className="max-w-[1200px] mx-auto px-7 py-16 pb-6">
-      <div className="font-[family-name:var(--font-montserrat)] text-[12px] tracking-[.2em] uppercase text-[#8A7A55] mb-4">Get Involved</div>
-      <h1 className="font-[family-name:var(--font-montserrat)] font-semibold text-[46px] text-[#0A3D62] mb-10" id="volunteer">
-        Serve with us, or let us pray with you
+      <div className="flex items-center gap-3 mb-[18px]">
+        <span className="w-[34px] h-[2px] bg-[#D4AF37]" />
+        <span className="font-[family-name:var(--font-montserrat)] text-[12px] tracking-[.2em] uppercase text-[#8A7A55]">Get Involved</span>
+      </div>
+      <h1 className="font-[family-name:var(--font-montserrat)] font-semibold text-[46px] leading-[1.12] text-[#0A3D62] mb-5 max-w-[700px]">
+        There&apos;s a place for you at Ruach Global.
       </h1>
+      <p className="text-[17.5px] leading-[1.75] text-[#4A5561] max-w-[680px] mb-14">
+        Whether you want to serve, give, pray, or simply stay connected — here are the ways you can be part of what God is doing through this ministry.
+      </p>
 
-      <div className="grid grid-cols-1 lg:grid-cols-[1.35fr_1fr] gap-[34px] items-start">
-        {/* Volunteer form */}
-        <div className="bg-white border border-[#EFE7D8] rounded-lg px-[38px] py-9 pb-10">
-          <h2 className="font-[family-name:var(--font-montserrat)] font-semibold text-[26px] text-[#0A3D62] mb-2">Volunteer registration</h2>
-          <p className="text-[15.5px] leading-[1.7] text-[#6B7683] mb-7">Tell us where you would like to serve. A coordinator will follow up within a week.</p>
+      {/* Ways to get involved */}
+      <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6 mb-20">
+        {ways.map((w) => (
+          <div key={w.title} className="border border-[#EFE7D8] rounded-xl p-7 bg-white flex flex-col">
+            <div className="w-[38px] h-[3px] bg-[#D4AF37] mb-5 rounded-full" />
+            <div className="font-[family-name:var(--font-montserrat)] font-semibold text-[19px] text-[#0A3D62] mb-3">{w.title}</div>
+            <p className="text-[14.5px] leading-[1.7] text-[#4A5561] flex-1 mb-6">{w.desc}</p>
+            <Link
+              href={w.href}
+              className="font-[family-name:var(--font-montserrat)] font-semibold text-[13.5px] px-5 py-3 rounded-md border-[1.5px] border-[#D4AF37] text-[#0A3D62] hover:bg-[#D4AF37] transition-colors text-center"
+            >
+              {w.cta}
+            </Link>
+          </div>
+        ))}
+      </div>
 
+      {/* Volunteer registration form */}
+      <div id="volunteer-form" className="mb-20">
+        <div className="font-[family-name:var(--font-montserrat)] text-[12px] tracking-[.2em] uppercase text-[#8A7A55] mb-3">Volunteer</div>
+        <h2 className="font-[family-name:var(--font-montserrat)] font-semibold text-[34px] text-[#0A3D62] mb-3">Register to serve</h2>
+        <p className="text-[16px] leading-[1.75] text-[#4A5561] mb-8 max-w-[640px]">Tell us where you&apos;d like to serve. A coordinator will follow up within a week.</p>
+
+        <div className="bg-white border border-[#EFE7D8] rounded-lg px-[38px] py-9 pb-10 max-w-[760px]">
           {vDone ? (
             <p className="text-[#0A3D62] font-[family-name:var(--font-montserrat)] font-semibold text-[16px]">Thank you! We&apos;ll be in touch soon.</p>
           ) : (
@@ -176,71 +241,48 @@ export default function VolunteerClient() {
             </form>
           )}
         </div>
+      </div>
 
-        {/* Prayer */}
-        <div className="bg-[#0A3D62] rounded-lg px-8 py-[34px] pb-[38px] text-white" id="prayer">
-          <div className="font-[family-name:var(--font-montserrat)] text-[11px] tracking-[.18em] uppercase text-[#D4AF37] mb-[14px]">Prayer Request</div>
-          <h2 className="font-[family-name:var(--font-montserrat)] font-semibold text-[24px] mb-[10px]">We will pray with you</h2>
-          <p className="text-[14.5px] leading-[1.7] text-[#C6D8E5] mb-6">Requests go only to our intercessory team. Submit anonymously if you prefer.</p>
-
-          {pDone ? (
-            <p className="text-[#D4AF37] font-[family-name:var(--font-montserrat)] font-semibold">Your request has been received. We are praying.</p>
-          ) : (
-            <form onSubmit={submitPrayer} className="grid gap-3">
-              <div>
-                <label htmlFor="prayer-name" className="block font-[family-name:var(--font-montserrat)] text-[11px] tracking-[.1em] uppercase text-[#8FB0C6] mb-1.5">Name</label>
-                <input
-                  id="prayer-name"
-                  placeholder="Optional"
-                  value={pForm.name}
-                  onChange={(e) => setPForm({ ...pForm, name: e.target.value })}
-                  className="w-full font-[family-name:var(--font-open-sans)] text-[14.5px] px-[14px] py-[13px] rounded-md border border-[#2D5E80] bg-[#072A44] text-white placeholder:text-[#8FB0C6] focus:outline-none focus:border-[#D4AF37]"
-                />
-              </div>
-              <div>
-                <label htmlFor="prayer-email" className="block font-[family-name:var(--font-montserrat)] text-[11px] tracking-[.1em] uppercase text-[#8FB0C6] mb-1.5">Email</label>
-                <input
-                  id="prayer-email"
-                  type="email"
-                  placeholder="you@example.com"
-                  value={pForm.email}
-                  onChange={(e) => setPForm({ ...pForm, email: e.target.value })}
-                  className="w-full font-[family-name:var(--font-open-sans)] text-[14.5px] px-[14px] py-[13px] rounded-md border border-[#2D5E80] bg-[#072A44] text-white placeholder:text-[#8FB0C6] focus:outline-none focus:border-[#D4AF37]"
-                />
-              </div>
-              <div>
-                <label htmlFor="prayer-request" className="block font-[family-name:var(--font-montserrat)] text-[11px] tracking-[.1em] uppercase text-[#8FB0C6] mb-1.5">Your request</label>
-                <textarea
-                  id="prayer-request"
-                  placeholder="Share what's on your heart…"
-                  value={pForm.request}
-                  onChange={(e) => setPForm({ ...pForm, request: e.target.value })}
-                  className="w-full h-[118px] font-[family-name:var(--font-open-sans)] text-[14.5px] px-[14px] py-[13px] rounded-md border border-[#2D5E80] bg-[#072A44] text-white placeholder:text-[#8FB0C6] resize-vertical focus:outline-none focus:border-[#D4AF37]"
-                />
-              </div>
-              <label className="flex items-center gap-[11px] cursor-pointer py-1">
-                <input
-                  type="checkbox"
-                  checked={anon}
-                  onChange={(e) => setAnon(e.target.checked)}
-                  className="sr-only"
-                />
-                <span aria-hidden="true" className={`w-[18px] h-[18px] rounded-[4px] border-[1.5px] border-[#D4AF37] grid place-items-center shrink-0 text-[#0A3D62] text-[12px] ${anon ? "bg-[#D4AF37]" : "bg-transparent"}`}>
-                  {anon ? "✓" : ""}
-                </span>
-                <span className="text-[14.5px] text-[#D6E4EE]">Submit anonymously</span>
-              </label>
-              {pError && <p role="alert" className="text-[13px] text-red-300">{pError}</p>}
+      {/* Newsletter sign-up */}
+      <div id="newsletter" className="bg-[#0A3D62] rounded-xl px-10 py-12">
+        <div className="font-[family-name:var(--font-montserrat)] text-[11px] tracking-[.18em] uppercase text-[#D4AF37] mb-3">Stay connected</div>
+        <h2 className="font-[family-name:var(--font-montserrat)] font-semibold text-[28px] text-white mb-3">Receive updates from Ruach Global</h2>
+        <p className="text-[15.5px] text-[#C6D8E5] mb-8 max-w-[540px]">Get ministry news, prayer points, and event updates delivered to your inbox.</p>
+        {nDone ? (
+          <p className="text-[#D4AF37] font-[family-name:var(--font-montserrat)] font-semibold text-[15px]">You&apos;re subscribed — thank you!</p>
+        ) : (
+          <form onSubmit={handleSubscribe} className="flex flex-wrap gap-3 items-end max-w-[560px]">
+            <div className="flex-1 min-w-[180px]">
+              <label className="block font-[family-name:var(--font-montserrat)] text-[11px] tracking-[.1em] uppercase text-[#8FB0C6] mb-1.5">Name</label>
+              <input
+                placeholder="Your name"
+                value={nName}
+                onChange={(e) => setNName(e.target.value)}
+                className="w-full font-[family-name:var(--font-open-sans)] text-[14.5px] px-[14px] py-[13px] rounded-md border border-[#2D5E80] bg-[#072A44] text-white placeholder:text-[#8FB0C6] focus:outline-none focus:border-[#D4AF37]"
+              />
+            </div>
+            <div className="flex-1 min-w-[200px]">
+              <label className="block font-[family-name:var(--font-montserrat)] text-[11px] tracking-[.1em] uppercase text-[#8FB0C6] mb-1.5">Email</label>
+              <input
+                type="email"
+                placeholder="you@example.com"
+                value={nEmail}
+                onChange={(e) => setNEmail(e.target.value)}
+                className="w-full font-[family-name:var(--font-open-sans)] text-[14.5px] px-[14px] py-[13px] rounded-md border border-[#2D5E80] bg-[#072A44] text-white placeholder:text-[#8FB0C6] focus:outline-none focus:border-[#D4AF37]"
+              />
+            </div>
+            <div>
               <button
                 type="submit"
-                disabled={pLoading}
-                className="font-[family-name:var(--font-montserrat)] font-semibold text-[14px] py-[14px] rounded-md bg-[#D4AF37] text-[#0A3D62] hover:bg-[#E3C459] transition-colors mt-1 disabled:opacity-60"
+                disabled={nLoading}
+                className="font-[family-name:var(--font-montserrat)] font-semibold text-[14px] px-7 py-[13px] rounded-md bg-[#D4AF37] text-[#0A3D62] hover:bg-[#E3C459] transition-colors disabled:opacity-60"
               >
-                {pLoading ? "Sending…" : "Send request"}
+                {nLoading ? "Signing up…" : "Sign up"}
               </button>
-            </form>
-          )}
-        </div>
+            </div>
+            {nError && <p role="alert" className="w-full text-[13px] text-red-300">{nError}</p>}
+          </form>
+        )}
       </div>
     </div>
   );

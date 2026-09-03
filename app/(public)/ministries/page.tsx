@@ -1,3 +1,4 @@
+import { redirect } from "next/navigation";
 import type { Metadata } from "next";
 import Link from "next/link";
 
@@ -58,6 +59,7 @@ const ministries = [
 ];
 
 export default function MinistriesPage() {
+  redirect("/");
   return (
     <div className="max-w-[1200px] mx-auto px-7 py-16 pb-6">
       <div className="font-[family-name:var(--font-montserrat)] text-[12px] tracking-[.2em] uppercase text-[#8A7A55] mb-4">Ministries</div>

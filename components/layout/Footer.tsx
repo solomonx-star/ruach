@@ -6,15 +6,14 @@ import { useState } from "react";
 const quickLinks = [
   { label: "Home", href: "/" },
   { label: "About", href: "/about" },
-  { label: "Ministries", href: "/ministries" },
   { label: "Events", href: "/events" },
   { label: "Gallery", href: "/gallery" },
+  { label: "Blog", href: "/blog" },
 ];
 
 const involvedLinks = [
-  { label: "Volunteer", href: "/volunteer" },
+  { label: "Get Involved", href: "/volunteer" },
   { label: "Donate", href: "/donate" },
-  { label: "Blog", href: "/blog" },
   { label: "Resources", href: "/resources" },
   { label: "Contact", href: "/contact" },
 ];

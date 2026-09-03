@@ -3,6 +3,7 @@ import Link from "next/link";
 import NewsletterWidget from "@/components/home/NewsletterWidget";
 import { connectDB } from "@/lib/mongodb";
 import { Event } from "@/models/Event";
+import { SiteSettings } from "@/models/SiteSettings";
 
 export const metadata: Metadata = {
   title: "RUACH Global Inc. — Carrying the breath of God to the nations",
@@ -20,13 +21,18 @@ interface EventItem {
 
 export default async function HomePage() {
   let events: EventItem[] = [];
+  let heroImageUrl: string | null = null;
   try {
     await connectDB();
-    const raw = await Event.find({ published: true, date: { $gte: new Date() } })
-      .sort({ date: 1 })
-      .limit(3)
-      .lean();
-    events = JSON.parse(JSON.stringify(raw));
+    const [rawEvents, settings] = await Promise.all([
+      Event.find({ published: true, date: { $gte: new Date() } })
+        .sort({ date: 1 })
+        .limit(3)
+        .lean(),
+      SiteSettings.findById("global").lean(),
+    ]);
+    events = JSON.parse(JSON.stringify(rawEvents));
+    heroImageUrl = settings?.heroImageUrl ?? null;
   } catch {
     // DB unavailable — show empty state
   }
@@ -35,7 +41,14 @@ export default async function HomePage() {
     <div>
       {/* Hero */}
       <section className="relative h-[640px] bg-[#072A44] overflow-hidden">
-        <div className="absolute inset-0 opacity-60 bg-[#0A3D62]" />
+        {heroImageUrl ? (
+          <div
+            className="absolute inset-0 bg-cover bg-center"
+            style={{ backgroundImage: `url(${heroImageUrl})` }}
+          />
+        ) : (
+          <div className="absolute inset-0 opacity-60 bg-[#0A3D62]" />
+        )}
         <div
           className="absolute inset-0"
           style={{ background: "linear-gradient(100deg,rgba(7,42,68,.94) 0%,rgba(7,42,68,.78) 46%,rgba(7,42,68,.25) 100%)" }}
@@ -52,7 +65,7 @@ export default async function HomePage() {
               Carrying the breath of God to the nations.
             </h1>
             <p className="text-[18.5px] leading-[1.65] text-[#D6E4EE] mb-9 max-w-[560px]">
-              We exist to preach the gospel, disciple believers, raise leaders and serve our communities — locally in our city and across the mission field.
+              Ruach Global Inc. exists to preach the Gospel, disciple believers, raise Spirit-filled leaders, and serve communities through prayer, teaching, outreach, and missions—locally and around the world.
             </p>
             <div className="flex gap-[14px] flex-wrap">
               <Link href="/about" className="font-[family-name:var(--font-montserrat)] font-semibold text-[14px] px-[30px] py-[15px] rounded-md bg-[#D4AF37] text-[#0A3D62] hover:bg-[#E3C459] transition-colors">
@@ -79,10 +92,7 @@ export default async function HomePage() {
             Our Mission
           </div>
           <p className="font-[family-name:var(--font-montserrat)] font-medium italic text-[29px] leading-[1.42] text-[#0A3D62] mb-[26px] max-w-[760px]">
-            &ldquo;To awaken every generation to the person of Jesus Christ — through Spirit-filled worship, sound teaching, compassionate outreach and the raising of leaders who serve the nations.&rdquo;
-          </p>
-          <p className="text-[16.5px] leading-[1.75] text-[#4A5561] max-w-[720px]">
-            RUACH Global Inc. is a faith-based, non-profit ministry serving members and neighbours through weekly gatherings, youth programs, community outreach and international missions. Whether you are visiting for the first time or partnering with us from another continent, there is a place for you here.
+            Ruach Global exists to demonstrate the love of Jesus Christ by serving underserved people and communities, restoring hope, creating opportunities, and empowering individuals to build brighter futures.
           </p>
         </div>
       </section>
@@ -151,7 +161,7 @@ export default async function HomePage() {
                 Give now
               </Link>
               <Link href="/volunteer" className="font-[family-name:var(--font-montserrat)] font-semibold text-[14px] px-[30px] py-[15px] rounded-md border-[1.5px] border-[rgba(255,255,255,.45)] text-white hover:border-white transition-colors">
-                Volunteer instead
+                Get involved
               </Link>
             </div>
           </div>
