@@ -4,7 +4,9 @@ import { useState } from "react";
 import { loadStripe } from "@stripe/stripe-js";
 import { Elements, CardElement, useStripe, useElements } from "@stripe/react-stripe-js";
 
-const stripePromise = loadStripe(process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY ?? "");
+const stripePromise = process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY
+  ? loadStripe(process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY)
+  : null;
 
 const amounts = ["$25", "$50", "$100", "$250"];
 const purposes = [
@@ -53,7 +55,7 @@ function DonateForm() {
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     if (!stripe || !elements) return;
-    if (numericAmount <= 0) { setError("Please enter a valid amount."); return; }
+    if (numericAmount < 0.5) { setError("Minimum donation is $0.50."); return; }
     const cardElement = elements.getElement(CardElement);
     if (!cardElement) return;
 
@@ -81,7 +83,7 @@ function DonateForm() {
       return;
     }
 
-    const { clientSecret } = await res.json();
+    const { clientSecret, paymentIntentId } = await res.json();
 
     const result = await stripe.confirmCardPayment(clientSecret, {
       payment_method: { card: cardElement, billing_details: { name, email } },
@@ -90,6 +92,19 @@ function DonateForm() {
     if (result.error) {
       setError(result.error.message ?? "Payment failed.");
     } else if (result.paymentIntent?.status === "succeeded") {
+      await fetch("/api/donations/confirm", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          paymentIntentId,
+          name,
+          email,
+          amount: numericAmount,
+          currency: "usd",
+          purpose,
+          type: giftType === "Recurring monthly" ? "recurring" : "one-time",
+        }),
+      });
       setDone(true);
     }
 

@@ -32,7 +32,9 @@ export async function POST(req: NextRequest) {
   try {
     const result = await uploadToCloudinary(buffer, folder, resourceType);
     return NextResponse.json({ url: result.url, publicId: result.publicId, bytes: result.bytes });
-  } catch {
-    return NextResponse.json({ error: "Upload to Cloudinary failed" }, { status: 500 });
+  } catch (err) {
+    console.error("[upload] Cloudinary error:", err);
+    const message = err instanceof Error ? err.message : String(err);
+    return NextResponse.json({ error: message }, { status: 500 });
   }
 }

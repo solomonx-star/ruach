@@ -23,26 +23,27 @@ export async function POST(req: NextRequest) {
     await connectDB();
 
     if (data.method === "stripe") {
+      if (data.amount < 0.5) {
+        return NextResponse.json({ error: "Minimum donation is $0.50." }, { status: 400 });
+      }
+
       const intent = await stripe.paymentIntents.create({
         amount: Math.round(data.amount * 100),
         currency: data.currency,
         metadata: { purpose: data.purpose, type: data.type, name: data.name, email: data.email },
       });
 
-      const donation = await Donation.create({
-        ...data,
-        amount: Math.round(data.amount * 100),
-        stripePaymentIntentId: intent.id,
-        status: "pending",
-      });
-
-      return NextResponse.json({ clientSecret: intent.client_secret, donationId: donation._id });
+      return NextResponse.json({ clientSecret: intent.client_secret, paymentIntentId: intent.id });
     }
 
     return NextResponse.json({ error: "Unsupported method" }, { status: 400 });
   } catch (err) {
     if (err instanceof z.ZodError) {
       return NextResponse.json({ error: err.flatten() }, { status: 400 });
+    }
+    console.error("[donations] POST error:", err);
+    if ((err as { type?: string }).type === "StripeInvalidRequestError") {
+      return NextResponse.json({ error: (err as { message: string }).message }, { status: 400 });
     }
     return NextResponse.json({ error: "Server error" }, { status: 500 });
   }
