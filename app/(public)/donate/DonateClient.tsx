@@ -20,6 +20,7 @@ const cardMethods = ["Credit card", "Debit card"];
 const comingSoon = ["Apple Pay", "Google Pay", "PayPal"];
 
 const CARD_OPTIONS = {
+  hidePostalCode: true,
   style: {
     base: {
       fontFamily: "var(--font-open-sans), sans-serif",
